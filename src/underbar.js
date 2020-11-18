@@ -305,6 +305,14 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var memos = {};
+    return function() {
+      var arg = JSON.stringify(arguments);
+      if (!memos[arg]) {
+        memos[arg] = func.apply(this, arguments);
+      }
+      return memos[arg];
+    };
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -314,6 +322,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments, 2);
+    return setTimeout(function() {
+      func.apply(this, args);
+    }, wait);
   };
 
 
@@ -327,7 +339,33 @@
   // TIP: This function's test suite will ask that you not modify the original
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
+  // version-1
+  // _.shuffle = function(array) {
+  //   var arrayCopy = array.slice();
+  //   var results = [];
+  //   var randomPop = function() {
+  //     var index = Math.floor(Math.random() * arrayCopy.length);
+  //     return arrayCopy.slice(index, 1)[0];
+  //   };
+  //   while (arrayCopy.length > 0) {
+  //     results.push(randomPop());
+  //   }
+  //   return results;
+  // };
+
   _.shuffle = function(array) {
+    const inputArr = [...array];
+    const length = inputArr.length;
+    // iterate over the elements
+    for (let i = 0; i < length; i++) {
+      // get random index with max being the length of array
+      const randomIndex = Math.floor(Math.random() * length);
+      // switch current value with random index
+      const currentValue = inputArr[i];
+      inputArr[i] = inputArr[randomIndex];
+      inputArr[randomIndex] = currentValue;
+    }
+    return inputArr;
   };
 
 
