@@ -122,12 +122,16 @@
     return result;
   };
 
-
   // Return the results of applying an iterator to each element.
   _.map = function(collection, iterator) {
     // map() is a useful primitive iteration function that works a lot
     // like each(), but in addition to running the operation on all
     // the members, it also maintains an array of results.
+    var results = [];
+    _.each(collection, function(elem) {
+      results.push(iterator(elem));
+    });
+    return results;
   };
 
   /*
@@ -169,6 +173,18 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
+    if (accumulator === undefined) {
+      accumulator = collection[0];
+      collection = Array.prototype.slice.call(collection, 1);
+      _.each(collection, function(nextElement) {
+        accumulator = iterator(accumulator, nextElement);
+      });
+    } else {
+      _.each(collection, function(nextElement) {
+        accumulator = iterator(accumulator, nextElement);
+      });
+    }
+    return accumulator;
   };
 
   // Determine if the array or object contains a given value (using `===`).
@@ -187,12 +203,28 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    if ( iterator === undefined || iterator === null) {
+      iterator = _.identity;
+    }
+    return _.reduce(collection, function(passed, item) {
+      if (!passed) {
+        return false;
+      }
+      return !!iterator(item);
+
+    }, true);
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    if (iterator === undefined || iterator === null) {
+      iterator = _.identity;
+    }
+    return !(_.every(collection, function(item) {
+      return !(iterator(item));
+    }));
   };
 
 
@@ -214,12 +246,22 @@
   //   }, {
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
-  _.extend = function(obj) {
+  _.extend = function(obj, source1, source2) {
+    return Object.assign(obj, source1, source2);
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var addProperty = function(val, key) {
+      if (!(key in obj)) {
+        obj[key] = val;
+      }
+    };
+    for (var i = 1; i < arguments.length; i++) {
+      _.each(arguments[i], addProperty);
+    }
+    return obj;
   };
 
 
